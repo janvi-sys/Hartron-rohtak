@@ -1,12 +1,14 @@
 {
   "name": "hartron-rohtak",
-  "homepage": "https://janvi-sys.github.io/hartron-rohtakk/",
+  "homepage": "https://janvi-sys.github.io/HARTRON_R",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+
+    
     "lint": "oxlint",
     "preview": "vite preview",
     "predeploy": "npm run build",
