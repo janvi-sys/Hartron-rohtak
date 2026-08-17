@@ -5,8 +5,8 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import Contact from "./pages/Contact";
-import Courses from "./pages/Courses";
-
+import Courses from "./pages/courses1";
+import CourseDetails from "./pages/coursedetail";
 import AboutCenter from "./pages/AboutCenter";
 import OurFaculty from "./pages/OurFaculty";
 import Internship from "./pages/Internship";
@@ -31,7 +31,7 @@ export default function App() {
             <Route path="/about" element={<AboutCenter />} />
             <Route path="/about/center" element={<AboutCenter />} />
             <Route path="/about/faculty" element={<OurFaculty />} />
-
+             <Route path="/course/:id" element={<CourseDetails />} />
             {/* Courses Routes */}
             <Route path="/courses" element={<Courses />} />
             <Route path="/courses/all" element={<Courses />} />
@@ -58,6 +58,7 @@ export default function App() {
                     Page Not Found
                   </p>
                 </div>
+                
               }
             />
           </Routes>

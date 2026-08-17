@@ -1,12 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import logo from "../assets/hasc-logo.jpg";
 
 export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false); // Mobile menu state
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Desktop dropdown state
+  const [isMobileStudentOpen, setIsMobileStudentOpen] = useState(false); // Mobile dropdown toggle
+  
   const location = useLocation();
+  const dropdownTimeout = useRef(null);
 
   const isActive = (path) => location.pathname === path;
+
+  // Smooth hover handlers for desktop dropdown
+  const handleMouseEnter = () => {
+    if (dropdownTimeout.current) clearTimeout(dropdownTimeout.current);
+    setIsDropdownOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    dropdownTimeout.current = setTimeout(() => {
+      setIsDropdownOpen(false);
+    }, 200);
+  };
 
   return (
     <header className="sticky top-0 z-40 bg-white shadow-xs font-sans">
@@ -29,7 +45,7 @@ export default function Navbar() {
 
           <div className="flex flex-wrap items-center justify-center gap-4">
             <a
-              href="tel:+919896111612"
+              href="tel:+919653540612"
               className="flex items-center gap-1.5 font-semibold hover:text-yellow-300 transition"
             >
               <span>+91-9653540612</span>
@@ -101,27 +117,64 @@ export default function Navbar() {
               📖 Courses
             </Link>
 
-            {/* Internship Link */}
-            <Link
-              to="/internship"
-              className={`hover:text-[#0066b2] ${isActive("/internship") ? "text-[#0066b2]" : ""}`}
+            {/* --- STUDENT SECTION DROPDOWN --- */}
+            <div
+              className="relative"
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
             >
-              🏆 Internship
-            </Link>
+              <button
+                type="button"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className={`flex items-center gap-1 hover:text-[#0066b2] cursor-pointer py-1 ${
+                  isActive("/verify-certificate") || isActive("/internship")
+                    ? "text-[#0066b2]"
+                    : ""
+                }`}
+              >
+                <span>🎓 Student Section</span>
+                <svg
+                  className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                    isDropdownOpen ? "rotate-180" : ""
+                  }`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
 
-            {/* Student Section Direct Links */}
-            <Link
-              to="/verify-certificate"
-              className={`hover:text-[#0066b2] ${isActive("/verify-certificate") ? "text-[#0066b2]" : ""}`}
-            >
-              🎓 Verify Certificate
-            </Link>
-            <Link
-              to="/student-login"
-              className={`hover:text-[#0066b2] ${isActive("/student-login") ? "text-[#0066b2]" : ""}`}
-            >
-              🔐 Student Portal
-            </Link>
+              {/* Dropdown Menu Items */}
+              {isDropdownOpen && (
+                <div className="absolute left-0 mt-1 w-52 bg-white rounded-lg shadow-xl border border-slate-100 py-2 z-50">
+                  <Link
+                    to="/verify-certificate"
+                    onClick={() => setIsDropdownOpen(false)}
+                    className={`block px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-[#0066b2] ${
+                      isActive("/verify-certificate") ? "text-[#0066b2] bg-slate-50" : "text-slate-700"
+                    }`}
+                  >
+                    ✅ Student Verification
+                  </Link>
+
+                  <Link
+                    to="/internship"
+                    onClick={() => setIsDropdownOpen(false)}
+                    className={`block px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-[#0066b2] ${
+                      isActive("/internship") ? "text-[#0066b2] bg-slate-50" : "text-slate-700"
+                    }`}
+                  >
+                    🏆 Internship
+                  </Link>
+                </div>
+              )}
+            </div>
 
             <Link
               to="/contact"
@@ -131,7 +184,7 @@ export default function Navbar() {
             </Link>
           </nav>
 
-          {/* Mobile Drawer */}
+          {/* MOBILE DRAWER */}
           {isOpen && (
             <div className="md:hidden py-4 space-y-2 font-semibold text-xs border-t text-slate-700">
               <Link
@@ -162,27 +215,38 @@ export default function Navbar() {
               >
                 📖 All Courses
               </Link>
-              <Link
-                to="/internship"
-                onClick={() => setIsOpen(false)}
-                className="block py-1.5 px-2"
-              >
-                🏆 Internship
-              </Link>
-              <Link
-                to="/verify-certificate"
-                onClick={() => setIsOpen(false)}
-                className="block py-1.5 px-2"
-              >
-                🎓 Verify Certificate
-              </Link>
-              <Link
-                to="/student-login"
-                onClick={() => setIsOpen(false)}
-                className="block py-1.5 px-2"
-              >
-                🔐 Student Portal
-              </Link>
+
+              {/* Mobile Student Section Accordion */}
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setIsMobileStudentOpen(!isMobileStudentOpen)}
+                  className="w-full flex justify-between items-center py-1.5 px-2 font-semibold text-slate-700"
+                >
+                  <span>🎓 Student Section</span>
+                  <span className="text-xs">{isMobileStudentOpen ? "▲" : "▼"}</span>
+                </button>
+
+                {isMobileStudentOpen && (
+                  <div className="pl-4 space-y-1 bg-slate-50 py-2 rounded-md my-1">
+                    <Link
+                      to="/verify-certificate"
+                      onClick={() => setIsOpen(false)}
+                      className="block py-1 px-2 text-slate-600 hover:text-[#0066b2]"
+                    >
+                      ✅ Student Verification
+                    </Link>
+                    <Link
+                      to="/internship"
+                      onClick={() => setIsOpen(false)}
+                      className="block py-1 px-2 text-slate-600 hover:text-[#0066b2]"
+                    >
+                      🏆 Internship
+                    </Link>
+                  </div>
+                )}
+              </div>
+
               <Link
                 to="/contact"
                 onClick={() => setIsOpen(false)}

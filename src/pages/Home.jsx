@@ -1,23 +1,59 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import ImageSlider from '../components/ImageSlider';
+
 import heroBg1 from '../assets/gallery/imgi_2_j5xjcdbao0wqargmhmxr.jpg';
 import heroBg2 from '../assets/gallery/imgi_9_gq74m4rdentbvyswnitc.jpg';
 import heroBg3 from '../assets/gallery/image3.jpeg';
-
+// Optional: Import video asset here if needed, e.g.,
+// import heroVideo from '../assets/gallery/hero-video.mp4';
 
 export default function Home() {
-  const heroImages = [heroBg1, heroBg2, heroBg3];
+  // Mixed Slides Array (Can contain both videos and images)
+  const heroSlides = [
+    { type: 'image', src: heroBg1 },
+    { type: 'image', src: heroBg2 },
+    { type: 'image', src: heroBg3 },
+    // To add a video slide, simply uncomment and format like this:
+    // { type: 'video', src: heroVideo }
+  ];
+
   const [activeHero, setActiveHero] = useState(0);
+  const timerRef = useRef(null);
+
+  // Timer function for automatic sliding
+  const startTimer = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setActiveHero((prev) => (prev + 1) % heroSlides.length);
+    }, 6000); // 6 seconds per slide
+  };
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveHero((prev) => (prev + 1) % heroImages.length);
-    }, 3000);
+    startTimer();
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [heroSlides.length]);
 
-    return () => clearInterval(interval);
-  }, []);
-  // Trending, high-demand, and future-proof Hartron courses (Basic + Advanced)
+  // Working Left Arrow Action
+  const handlePrev = () => {
+    setActiveHero((prev) => (prev === 0 ? heroSlides.length - 1 : prev - 1));
+    startTimer(); // Reset timer after manual click
+  };
+
+  // Working Right Arrow Action
+  const handleNext = () => {
+    setActiveHero((prev) => (prev + 1) % heroSlides.length);
+    startTimer(); // Reset timer after manual click
+  };
+
+  // Working Indicator Dots Action
+  const handleSelectSlide = (index) => {
+    setActiveHero(index);
+    startTimer();
+  };
+
+  // Trending, high-demand Hartron courses
   const featuredCourses = [
     {
       id: "feat-1",
@@ -85,17 +121,92 @@ export default function Home() {
 
   return (
     <div className="bg-slate-50 min-h-screen text-slate-800">
-      
-      {/* 1. HERO SECTION */}
-      <section className="relative overflow-hidden text-white py-16 sm:py-24 px-4">
-        <div className="absolute inset-0">
-          <img src={heroImages[activeHero]} alt="Hero background" className="absolute inset-0 w-full h-full object-cover opacity-50 transition-opacity duration-1000" />
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-950/75 via-slate-950/35 to-blue-950/65"></div>
-        </div>
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-yellow-400/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-        <div className="max-w-6xl mx-auto text-center relative z-10">
+      {/* 1. HERO SECTION WITH WORKING VIDEO/IMAGE SLIDER */}
+      <section className="relative overflow-hidden text-white py-16 sm:py-24 px-4 min-h-[85vh] flex items-center justify-center select-none group">
+
+        {/* BACKGROUND SLIDER (VIDEOS AND IMAGES) */}
+        <div className="absolute inset-0 pointer-events-none">
+          {heroSlides.map((slide, index) => (
+            <div
+              key={index}
+              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                index === activeHero ? "opacity-60 scale-105" : "opacity-0 scale-100"
+              }`}
+            >
+              {slide.type === 'video' ? (
+                <video
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover"
+                >
+                  <source src={slide.src} type="video/mp4" />
+                </video>
+              ) : (
+                <div
+                  className="w-full h-full bg-cover bg-center"
+                  style={{ backgroundImage: `url(${slide.src})` }}
+                />
+              )}
+            </div>
+          ))}
+
+          {/* Dark Overlay for Text Legibility */}
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-950/80 via-slate-950/50 to-blue-950/70" />
+        </div>
+
+        {/* Ambient Glow Effects */}
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-yellow-400/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        {/* --- WORKING LEFT SLIDER ARROW --- */}
+        <button
+          onClick={handlePrev}
+          type="button"
+          aria-label="Previous Slide"
+          className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-black/40 hover:bg-black/70 active:scale-95 border border-white/30 text-white flex items-center justify-center transition-all duration-200 backdrop-blur-xs shadow-lg cursor-pointer"
+        >
+          <svg
+            className="w-5 h-5 sm:w-6 sm:h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2.5"
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+        </button>
+
+        {/* --- WORKING RIGHT SLIDER ARROW --- */}
+        <button
+          onClick={handleNext}
+          type="button"
+          aria-label="Next Slide"
+          className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-black/40 hover:bg-black/70 active:scale-95 border border-white/30 text-white flex items-center justify-center transition-all duration-200 backdrop-blur-xs shadow-lg cursor-pointer"
+        >
+          <svg
+            className="w-5 h-5 sm:w-6 sm:h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2.5"
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
+        </button>
+
+        {/* Hero Content */}
+        <div className="max-w-6xl mx-auto text-center relative z-10 px-8 sm:px-12">
           <div className="inline-flex items-center gap-2 bg-yellow-400/10 border border-yellow-400/30 text-yellow-300 px-4 py-1.5 rounded-full text-xs md:text-sm font-semibold mb-6 animate-pulse">
             <span>📢</span>
             <span>New Batches Starting Next Week | Limited Seats!</span>
@@ -110,14 +221,14 @@ export default function Home() {
           </p>
 
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-            <Link 
-              to="/courses" 
+            <Link
+              to="/courses"
               className="w-full sm:w-auto bg-yellow-400 hover:bg-yellow-300 text-blue-950 font-extrabold px-8 py-3.5 sm:py-4 rounded-xl shadow-lg hover:shadow-yellow-400/20 transition-all transform hover:-translate-y-0.5 text-center text-sm sm:text-base"
             >
               Explore All Courses →
             </Link>
-            <Link 
-              to="/contact" 
+            <Link
+              to="/contact"
               className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white border border-white/20 font-semibold px-8 py-3.5 sm:py-4 rounded-xl transition text-center text-sm sm:text-base"
             >
               Book Free Counseling
@@ -125,23 +236,38 @@ export default function Home() {
           </div>
 
           {/* Quick Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16 pt-10 border-t border-slate-800">
-            <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16 pt-10 border-t border-slate-800/80">
+            <div className="p-4 bg-slate-900/60 backdrop-blur-xs rounded-xl border border-slate-800">
               <span className="block text-2xl sm:text-3xl font-extrabold text-yellow-400">100%</span>
               <span className="text-xs text-slate-400 mt-1 block uppercase tracking-wider">Govt Recognized</span>
             </div>
-            <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800">
+            <div className="p-4 bg-slate-900/60 backdrop-blur-xs rounded-xl border border-slate-800">
               <span className="block text-2xl sm:text-3xl font-extrabold text-yellow-400">5000+</span>
               <span className="text-xs text-slate-400 mt-1 block uppercase tracking-wider">Students Trained</span>
             </div>
-            <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800">
+            <div className="p-4 bg-slate-900/60 backdrop-blur-xs rounded-xl border border-slate-800">
               <span className="block text-2xl sm:text-3xl font-extrabold text-yellow-400">1:1</span>
               <span className="text-xs text-slate-400 mt-1 block uppercase tracking-wider">PC Allocation</span>
             </div>
-            <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800">
+            <div className="p-4 bg-slate-900/60 backdrop-blur-xs rounded-xl border border-slate-800">
               <span className="block text-2xl sm:text-3xl font-extrabold text-yellow-400">DEO</span>
               <span className="text-xs text-slate-400 mt-1 block uppercase tracking-wider">Exam Special Prep</span>
             </div>
+          </div>
+
+          {/* MANUAL DOT INDICATORS */}
+          <div className="flex justify-center items-center gap-2 mt-8 z-30 relative">
+            {heroSlides.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => handleSelectSlide(idx)}
+                aria-label={`Go to slide ${idx + 1}`}
+                className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                  idx === activeHero ? "bg-yellow-400 w-8" : "bg-white/40 hover:bg-white/70 w-2"
+                }`}
+              />
+            ))}
           </div>
 
         </div>
@@ -194,7 +320,6 @@ export default function Home() {
       {/* 3. FEATURED COURSES PREVIEW */}
       <section className="py-16 bg-slate-100/70 border-y border-slate-200/80 px-4">
         <div className="max-w-6xl mx-auto">
-          
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4">
             <div>
               <span className="text-xs font-extrabold uppercase tracking-widest text-blue-900">Trending & Future-Ready</span>
@@ -218,13 +343,17 @@ export default function Home() {
                   <h3 className="font-bold text-slate-900 text-base mb-2 leading-snug">{c.title}</h3>
                   <p className="text-slate-600 text-xs leading-relaxed mb-6 line-clamp-3">{c.desc}</p>
                 </div>
-                <Link to="/contact" className="block text-center bg-slate-50 hover:bg-blue-900 hover:text-white text-blue-900 text-xs font-bold py-2.5 rounded-xl border border-slate-200 transition">
-                  Inquire Now
-                </Link>
+                <div className="flex gap-2">
+                  <Link to={`/course/${c.id}`} className="flex-1 text-center bg-blue-900 hover:bg-blue-800 text-white text-xs font-bold py-2.5 rounded-xl transition shadow-xs">
+                    View Details
+                  </Link>
+                  <Link to="/contact" state={{ selectedCourse: c.title, courseId: c.id }} className="flex-1 text-center bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold py-2.5 rounded-xl border border-slate-200 transition">
+                    Inquire
+                  </Link>
+                </div>
               </div>
             ))}
           </div>
-
         </div>
       </section>
 
@@ -236,16 +365,14 @@ export default function Home() {
           <p className="text-slate-600 text-xs sm:text-sm mt-2">A structured 5-step path to turn learning into a career.</p>
         </div>
 
-        {/* Responsive Steps Container */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 lg:gap-4">
           {journeySteps.map((step, idx) => (
-            <div 
-              key={step.id} 
+            <div
+              key={step.id}
               className={`relative bg-white rounded-2xl p-6 shadow-xs hover:shadow-md transition-all duration-300 border border-slate-200/80 flex flex-col justify-between ${
                 idx % 2 !== 0 ? 'lg:mt-6' : 'lg:mt-0'
               }`}
             >
-              {/* Top Number Badge */}
               <div className={`absolute -top-4 left-6 lg:left-1/2 lg:-translate-x-1/2 w-9 h-9 ${step.badgeColor} text-white font-black text-xs rounded-xl flex items-center justify-center shadow-xs`}>
                 {step.id}
               </div>
@@ -255,7 +382,6 @@ export default function Home() {
                 <p className="text-slate-600 text-xs leading-relaxed">{step.desc}</p>
               </div>
 
-              {/* Bottom Color Bar */}
               <div className={`mt-6 h-1 w-full rounded-full ${step.badgeColor}`}></div>
             </div>
           ))}
@@ -265,7 +391,7 @@ export default function Home() {
       {/* 5. CALL TO ACTION BANNER */}
       <section className="py-12 sm:py-16 px-4 max-w-6xl mx-auto">
         <div className="bg-[#0f2257] rounded-3xl p-6 sm:p-12 text-white flex flex-col md:flex-row items-center justify-between gap-8 shadow-xl relative overflow-hidden">
-          
+
           <div className="space-y-3 max-w-2xl text-center md:text-left">
             <span className="text-yellow-400 font-extrabold text-xs tracking-widest uppercase">
               READY TO UPGRADE YOUR CAREER?
@@ -279,15 +405,15 @@ export default function Home() {
           </div>
 
           <div className="shrink-0 flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-            <Link 
-              to="/contact" 
+            <Link
+              to="/contact"
               className="w-full sm:w-auto bg-[#ffc000] hover:bg-yellow-400 text-blue-950 font-black px-6 py-3 rounded-xl text-center transition text-xs sm:text-sm shadow-md"
             >
               Contact Us Now
             </Link>
 
-            <a 
-              href="tel:+919653540612" 
+            <a
+              href="tel:+919653540612"
               className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white font-semibold px-6 py-3 rounded-xl text-center border border-white/20 transition flex items-center justify-center gap-2 text-xs sm:text-sm"
             >
               <svg className="w-4 h-4 fill-current text-white" viewBox="0 0 24 24">

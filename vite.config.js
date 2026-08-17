@@ -9,5 +9,5 @@ export default defineConfig({
     tailwindcss(),
   ],
   
-   base: '/Hartron-rohtak/'
+   base: '/hartron-rohtakk/'
 })
